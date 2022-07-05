@@ -46,6 +46,19 @@ void setup() {
 
     turn_on_dut();
 
+    uint32_t t_s = millis();
+    for (;;) {
+        if (Serial.available()) {
+            uint8_t u = Serial.read();
+            if (u == 0x02) {                    // waiting for "system ready" flag
+                break;
+            }
+        }
+        if (millis()-t_s>=7000) {
+            comm_lost(tft);
+        }
+    }
+
     /* voltage measurement test */
     if (!(measure(tft))) {                      // if test fails
         reset_controller();

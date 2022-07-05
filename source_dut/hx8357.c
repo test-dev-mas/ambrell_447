@@ -206,7 +206,9 @@ void hx8357_init() {
     // write8_data(0xDF);
 
     /* clear screen */
-    fill_screen(0xcc, 0x00, 0x00);
+    // fill_screen(0xff, 0x00, 0x00);
+    // fill_screen(0x00,0xff,0x00);
+    fill_screen(0x00,0x00,0xff);
 }
 
 void fill_screen(uint8_t r, uint8_t g, uint8_t b) {

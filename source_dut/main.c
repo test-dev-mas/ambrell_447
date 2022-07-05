@@ -27,7 +27,10 @@ int main() {
 
     DDRL |= (1<<PL0)|(1<<PL1)|(1<<PL2)|(1<<PL3);        // THIS LINE PUTS LEDS(LIMIT,FAULT,...) TO LOW, IF NOT PIN READ GIVES RANDOM RESULTS
     
-    sei();                                      // enable golabl interrupt       
+    sei();                                      // enable golabl interrupt  
+
+    uart3_transmit(0x02);                       // system ready flag
+
     for (;;) {
         if (uart_flag) {
             uart_flag = false;
@@ -191,7 +194,7 @@ int main() {
 
                 sd_go_idle();                   // this step is necessary
                 sd_send_if_cond(res);           // writes response to res[]
-                sd_print_response(res);
+                // sd_print_response(res);         // this line not necessary, sprintf() sometimes resets DUT
                 if (res[4] == 0xAA) {
                     uart3_transmit(0x2B);
                 }
@@ -199,7 +202,12 @@ int main() {
                     uart3_transmit(0x2C);
                 }
             }
-            /* display test */
+            /* display test
+            
+                both +/- channels have to be broken for transmit to fail
+                maybe tx/rx is done on a same chip
+                different from rs485 setup!
+             */
             if (temp == 0x45) {
                 DDRH |= (1<<PH7);
                 PORTH |= (1<<PH7);              // enable transmit on SN65HVD1793
@@ -228,6 +236,18 @@ int main() {
             }
             if (temp == 0x46) {
                 draw_gradient();
+            }
+            /* TERM_RS485 ON */
+            if (temp == 0x47) {
+                DDRE |= (1<<PE2);
+                PORTE |= (1<<PE2);
+                uart3_transmit(0x03);           // send ACK
+            }
+            /* TERM_RS485 OFF */
+            if (temp == 0x48) {
+                DDRE |= (1<<PE2);
+                PORTE &= ~(1<<PE2);
+                uart3_transmit(0x03);           // send ACK
             }
         }
     }
